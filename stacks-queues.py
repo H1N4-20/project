@@ -78,7 +78,7 @@ class Queue:
         """Return the number of items in the queue."""
         return len(self.items)
 
-# --- Testing Stack ---
+#  Testing Stack 
 stack = Stack()
 stack.push("Math")
 stack.push("English")
@@ -89,7 +89,7 @@ print("Top of stack:", stack.peek())     # Expected: "History"
 print("Pop:", stack.pop())               # Expected: "History"
 print("Stack after pop:", stack.items)   # Expected: ["Math", "English"]
 
-# --- Testing Queue ---
+#  Testing Queue 
 queue = Queue()
 queue.enqueue("Flashcard 1")
 queue.enqueue("Flashcard 2")
@@ -99,3 +99,4 @@ print("Queue size:", queue.size())       # Expected: 3
 print("Front of queue:", queue.peek())   # Expected: "Flashcard 1"
 print("Dequeue:", queue.dequeue())       # Expected: "Flashcard 1"
 print("Queue after dequeue:", queue.items)  # Expected: ["Flashcard 2", "Flashcard 3"]
+
