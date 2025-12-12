@@ -1,3 +1,42 @@
+import hashlib
+import os
+
+USERS_FILE = "users.txt"
+
+def hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode("utf-8")).hexdigest()
+
+def load_users() -> dict:
+    users = {}
+    if not os.path.exists(USERS_FILE):
+        return users
+    with open(USERS_FILE, "r", encoding="utf-8") as f:
+        for line in f:
+            parts = line.strip().split(",")
+            if len(parts) == 2:
+                users[parts[0]] = parts[1]
+    return users
+
+def save_user(username: str, hashed_password: str):
+    with open(USERS_FILE, "a", encoding="utf-8") as f:
+        f.write(f"{username},{hashed_password}\n")
+
+def register_user(username: str, password: str) -> bool:
+    if not username or not password:
+        return False
+    if "," in username:
+        return False
+    users = load_users()
+    if username in users:
+        return False
+    save_user(username, hash_password(password))
+    return True
+
+def authenticate_user(username: str, password: str) -> bool:
+    users = load_users()
+    if username not in users:
+        return False
+    return users[username] == hash_password(password)
 import tkinter as tk
 from tkinter import messagebox
 
@@ -69,7 +108,7 @@ flashcard_sets = {
     ],
     "Literature": [
         {"question": "Who wrote *Atonement*?", "answer": "Ian McEwan"},
-        {"question": "Author of *1984*?", "answer": "George Orwell"},
+        {"question": "who is the main character of the Great Gatsby*?", "answer": "Jay Gatsby"},
     ]
 }
 
@@ -204,13 +243,52 @@ def show_feedback():
 
 #  PROFILE MODULE 
 def show_profile():
-    """Display profile placeholder."""
+    for widget in content_frame.winfo_children():
+        widget.destroy()
+        """Display profile placeholder."""
+
+    tk.Label(content_frame, text="👤 Profile", **title_style).pack(pady=30)
+    tk.Label(content_frame, text=f"User: {current_user}", **label_style).pack(pady=10)
+    tk.Label(content_frame, text=f"XP: {xp} | Streak: {streak}", **label_style).pack(pady=10)
+
+current_user = None  # store logged-in username
+
+def show_login_screen():
     for widget in content_frame.winfo_children():
         widget.destroy()
 
-    tk.Label(content_frame, text="👤 Profile", **title_style).pack(pady=30)
-    tk.Label(content_frame, text="User: Hina", **label_style).pack(pady=10)
-    tk.Label(content_frame, text=f"XP: {xp} | Streak: {streak}", **label_style).pack(pady=10)
+    tk.Label(content_frame, text="Study Quest Login", font=("Comic Sans MS", 24, "bold"), bg="#ffffff").pack(pady=20)
+
+    tk.Label(content_frame, text="Username", bg="#ffffff").pack()
+    username_entry = tk.Entry(content_frame, width=30)
+    username_entry.pack(pady=5)
+
+    tk.Label(content_frame, text="Password", bg="#ffffff").pack()
+    password_entry = tk.Entry(content_frame, width=30, show="*")
+    password_entry.pack(pady=5)
+
+    def handle_login():
+        global current_user
+        username = username_entry.get().strip()
+        password = password_entry.get()
+
+        if authenticate_user(username, password):
+            current_user = username
+            load_home()
+        else:
+            messagebox.showerror("Login Failed", "Incorrect username or password.")
+
+    def handle_register():
+        username = username_entry.get().strip()
+        password = password_entry.get()
+
+        if register_user(username, password):
+            messagebox.showinfo("Success", "Account created. You can now log in.")
+        else:
+            messagebox.showerror("Error", "Registration failed. Try a different username.")
+
+    tk.Button(content_frame, text="Login", command=handle_login, **button_style).pack(pady=10)
+    tk.Button(content_frame, text="Register", command=handle_register, **button_style).pack()
 
 # MENU BAR
 tk.Label(menu_frame, text="📚 Menu", font=("Verdana", 16, "bold"), bg="#f0f8ff").pack(pady=20)
@@ -222,5 +300,5 @@ tk.Button(menu_frame, text="💬 Feedback", command=show_feedback, **menu_button
 tk.Button(menu_frame, text="🏠 Home", command=load_home, **menu_button_style).pack(fill="x")
 
 # INITIALIZE 
-load_home()
+show_login_screen()
 root.mainloop()
